@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Kawa - Test</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f3ebe3;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .card {
+      background: #f6f2ee;
+      border: 1px solid #d8ccc2;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+      max-width: 600px;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #5b3a29;
+      margin-bottom: 10px;
+    }
+
+    .section {
+      margin-bottom: 15px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #3e2c23;
+      margin-bottom: 5px;
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .option-btn {
+      padding: 8px 16px;
+      border: 1px solid #c1a792;
+      background: white;
+      border-radius: 20px;
+      cursor: pointer;
+      color: #5b3a29;
+    }
+
+    .option-btn.selected {
+      background: #8c5e3c;
+      color: white;
+    }
+
+    .result {
+      font-weight: bold;
+      color: #5b3a29;
+      margin-top: 10px;
+    }
+
+    .answer-box {
+      background: #fff9f4;
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    button.main-btn {
+      background: #5b3a29;
+      color: white;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card" id="quiz">
+  <div class="title" id="coffee-name">Nazwa kawy</div>
+
+  <div class="section">
+    <div class="label">☕ Rozmiar filiżanki</div>
+    <div class="options" id="cup-options"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">🧯 Kolba</div>
+    <div class="options" id="colb-options"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">🔘 Przycisk</div>
+    <div class="options" id="button-options"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">🥛 Dodatek</div>
+    <div class="options" id="addon-options"></div>
+  </div>
+
+  <div class="result" id="result"></div>
+  <div class="answer-box" id="correct-answer" style="display:none;"></div>
+
+  <button class="main-btn" id="check-btn">Sprawdź</button>
+</div>
+
+<script>
+  const recipes = [
+    { name: "Americano/Czarna/Biała duża", colbSize: 1, cupSize: 3, buttonType: 4, addon: "Brak" },
+    { name: "Espresso lungo/Czarna/Biała mała", colbSize: 1, cupSize: 2, buttonType: 2, addon: "Brak" },
+    { name: "Espresso doppio", colbSize: 2, cupSize: 2, buttonType: 3, addon: "Brak" },
+    { name: "Espresso", colbSize: 1, cupSize: 1, buttonType: 1, addon: "Brak" },
+    { name: "Espresso macchiato", colbSize: 1, cupSize: 1, buttonType: 1, addon: "Dolać mleko" },
+    { name: "Cappuccino", colbSize: 1, cupSize: 2, buttonType: 1, addon: "Dolać mleko" },
+    { name: "Cappuccino duże", colbSize: 2, cupSize: 3, buttonType: 3, addon: "Dolać mleko" },
+    { name: "Latte", colbSize: 1, cupSize: 5, buttonType: 3, addon: "Najpierw mleko" },
+    { name: "Latte duże", colbSize: 2, cupSize: 4, buttonType: 3, addon: "Najpierw mleko" },
+    { name: "Latte machiato", colbSize: 2, cupSize: 6, buttonType: 3, addon: "Brak" },
+  ];
+
+  const options = {
+    cupSize: [1, 2, 3, 4, 5, 6],
+    colbSize: [1, 2],
+    buttonType: [1, 2, 3, 4],
+    addon: ["Brak", "Dolać mleko", "Najpierw mleko"],
+  };
+
+  let selected = {};
+  let current = recipes[Math.floor(Math.random() * recipes.length)];
+
+  const updateUI = () => {
+    document.getElementById("coffee-name").textContent = current.name;
+    createButtons("cup-options", options.cupSize, "cupSize");
+    createButtons("colb-options", options.colbSize, "colbSize");
+    createButtons("button-options", options.buttonType, "buttonType");
+    createButtons("addon-options", options.addon, "addon");
+    document.getElementById("result").textContent = "";
+    document.getElementById("correct-answer").style.display = "none";
+    selected = {};
+  };
+
+  const createButtons = (id, values, key) => {
+    const container = document.getElementById(id);
+    container.innerHTML = "";
+    values.forEach(val => {
+      const btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.textContent = val;
+      btn.onclick = () => {
+        selected[key] = val;
+        [...container.children].forEach(c => c.classList.remove("selected"));
+        btn.classList.add("selected");
+      };
+      container.appendChild(btn);
+    });
+  };
+
+  document.getElementById("check-btn").onclick = () => {
+    const correct =
+      selected.cupSize == current.cupSize &&
+      selected.colbSize == current.colbSize &&
+      selected.buttonType == current.buttonType &&
+      selected.addon == current.addon;
+
+    document.getElementById("result").textContent = correct
+      ? "✅ Poprawnie!"
+      : "❌ Błąd. Spróbuj ponownie.";
+
+      if (!correct) {
+        document.getElementById("correct-answer").innerHTML =
+            `✅ Poprawna odpowiedź:<br>☕ Filiżanka: ${current.cupSize} | 🧯 Kolba: ${current.colbSize} | 🔘 Przycisk: ${current.buttonType} | 🥛 Dodatek: ${current.addon}`;
+        document.getElementById("correct-answer").style.display = "block";
+        } else {
+        let next;
+        do {
+            next = recipes[Math.floor(Math.random() * recipes.length)];
+        } while (next.name === current.name);
+        current = next;
+        setTimeout(updateUI, 1500);
+        }
+
+  };
+
+  updateUI();
+</script>
+
+</body>
+</html>
